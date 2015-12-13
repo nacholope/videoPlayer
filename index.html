@@ -6,6 +6,7 @@
     <title>Nacho Lopez</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/player.css" rel="stylesheet">
 </head>
 
 <body>
@@ -29,7 +30,7 @@
     </div>
 </nav>
 <div class="container">
-    <div class="col-md-12" id="videoPlayer">
+    <div id="videoPlayer">
         <!--<video id="player" poster="img/poster.png">
             <source src="video/video.mp4" type="video/mp4">
             Your browser does not support the video element.
@@ -44,8 +45,22 @@
 <script type="text/javascript" src="js/iLopez.videoPlayer.js"></script>
 <script type="text/javascript">
     new jQuery.iLopez.videoPlayer("#videoPlayer", {
-        id: 'player',
+        id : 'pepitoPlayer',
         poster: 'img/poster.png',
+        buttons :{
+            timeBar : true,
+            timeStamp : true,
+            play : true,
+            stop : true,
+            volumeUp : true,
+            volumeDown : true,
+            fastForward : false,
+            slowForward : false,
+            fullScreen: true
+        },
+        keys:{
+            play: 69
+        },
         videoURl: 'video/video.mp4',
         type: 'video/mp4'
     }, {});

@@ -6,105 +6,168 @@
         // To avoid scope issues, use 'base' instead of 'this'
         // to reference this class from internal events and functions.
         var base = this;
+        //Declare Player. Its initializated on initPlayer after append the video.
+        base.player;
+        //Declare ID. will be initialized with Id pased on constructor + random number.
+        base.id;
         // Access to jQuery and DOM versions of element
         base.$el = $(el);
         base.el = el;
-        console.log(getData.id);
-        base.player = $(getData.id)[0];
         // Add a reverse reference to the DOM object
         base.$el.data("iLopez.videoPlayer", base);
         base.init = function () {
+            base.$el[0].className = 'col-md-10';
             base.getData = getData;
-            base.options = $.extend({}, $.iLopez.videoPlayer.defaultOptions, options);
+            base.options = $.extend($.iLopez.videoPlayer.defaultOptions, options);
+            base.id = base.getData.id + Math.floor((Math.random() * 100) + 1);
             // Put your initialization code here
             base.initPlayer();
             base.initButtons();
-            //console.log(base.$el.find("#play").attr('class','glyphicon glyphicon-repeat'));
+            base.addKeyListeners();
+            base.renderScenesForm();
+            base.renderScenes();
         };
+        /**
+         * Styles the box of buttons.
+         */
+        base.renderScenesForm = function () {
+            function updateSceneRow(name) {
+                var scenes = $("#sceneRow")[0];
+                var li = document.createElement('li');
+                var sceneButton = document.createElement('button');
+                sceneButton.className = 'btn btn-default scene';
+                sceneButton.innerHTML = name;
+                sceneButton.onclick = function () {
+                    base.player.currentTime = localStorage.getItem(name);
+                };
+                li.appendChild(sceneButton);
+                scenes.appendChild(li);
+            }
+            var row = document.createElement('ul');
+            row.id = 'sceneRow';
+            row.className = 'col-md-2';
+            $('.container').last().append(row);
 
-        // Sample Function, Uncomment to use
-        base.render = function () {
-            base.$el.html(base.options);
+            var buttonCreateScenes = document.createElement('button');
+            buttonCreateScenes.type = 'button';
+            buttonCreateScenes.className = 'btn btn-default sceneMaker';
+            buttonCreateScenes.innerHTML = 'Save scene';
+            buttonCreateScenes.onclick = function () {
+                var sceneName = $('#inputScene').get(0).value;
+                var time = base.player.currentTime;
+                if (localStorage.getItem(sceneName) === null) {
+                    localStorage.setItem(sceneName, time);
+                    updateSceneRow(sceneName);
+                } else {
+                    if (confirm("This scene exist, do you want update the time?")) {
+                        localStorage.setItem(sceneName, time);
+                    }
+                }
+
+            };
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.id = "inputScene";
+            input.placeholder = 'Scene name';
+            $("#sceneRow").append(buttonCreateScenes);
+            $("#sceneRow").append(input);
+
         };
+        base.renderScenes = function () {
+            $.each(localStorage, function (index, value) {
+                var li = document.createElement('li');
+                var button = document.createElement('button');
+                button.className = 'btn btn-default scene';
+                button.innerHTML = index;
+                button.onclick = function () {
+                    base.player.currentTime = value;
+                };
+                li.appendChild(button);
+                $("#sceneRow").append(li);
+            });
 
+        };
         // Functions of the VideoPlayer Buttons
         base.play = function (evt) {
             evt.preventDefault();
-            player.paused ? player.play() : player.pause();
+            base.player.paused ? base.player.play() : base.player.pause();
         };
         base.stop = function (evt) {
             evt.preventDefault();
-            player.currentTime = 0;
-            player.pause();
+            base.player.currentTime = 0;
+            base.player.pause();
         };
         base.forward = function (evt) {
             evt.preventDefault();
-            player.playbackRate = Math.min(5, player.playbackRate + 0.1);
+            base.player.playbackRate = Math.min(5, base.player.playbackRate + 0.1);
         };
         base.backward = function (evt) {
             evt.preventDefault();
-            player.playbackRate = Math.max(0, player.playbackRate - 0.1);
+            base.player.playbackRate = Math.max(0, base.player.playbackRate - 0.1);
         };
         base.fullScreen = function (evt) {
             evt.preventDefault();
-            if (player.requestFullscreen) {
-                player.requestFullscreen();
-            } else if (player.mozRequestFullScreen) {
-                player.mozRequestFullScreen();
-            } else if (player.webkitRequestFullScreen) {
-                player.webkitRequestFullScreen();
-            } else if (player.msRequestFullScreen) {
-                player.msRequestFullScreen();
+            if (base.player.requestFullscreen) {
+                base.player.requestFullscreen();
+            } else if (base.player.mozRequestFullScreen) {
+                base.player.mozRequestFullScreen();
+            } else if (base.player.webkitRequestFullScreen) {
+                base.player.webkitRequestFullScreen();
+            } else if (base.player.msRequestFullScreen) {
+                base.player.msRequestFullScreen();
             }
-            player.controls = true;
+            base.player.controls = true;
         };
         base.increaseVolume = function (evt) {
             evt.preventDefault();
-            player.volume = Math.min(1, player.volume + 0.1);
+            base.player.volume = Math.min(1, base.player.volume + 0.1);
         };
         base.decreaseVolume = function (evt) {
             evt.preventDefault();
-            player.volume = Math.max(0, player.volume - 0.1);
+            base.player.volume = Math.max(0, base.player.volume - 0.1);
         };
         /**
          * Functions that create VideoPlayer Buttons
          * @returns {Element}
          */
+        base.createTimeStamp = function(){
+            var buttonItem = document.createElement('li');
+            buttonItem.innerHTML = '<span class="currentTime">00</span>';
+            buttonItem.innerHTML += '<span>:</span>';
+            buttonItem.innerHTML += '<span class="totalDuration">00</span>';
+            return buttonItem;
+        };
         base.createTimeBar = function () {
             var buttonItem = document.createElement('li');
             var input = document.createElement('input');
             input.type = 'range';
             input.id = 'timeBar';
             input.min = '0';
-            input.className = 'col-md-12';
             input.value = '0';
             input.max = '100';
+            ///////////////////////BUG///////////////////////////
+            //Si usas el localhost que te proporciona Webstorm no funciona(No actualiza currentTime).
+            //Abriendo el HTML manualmente Si.
             input.onchange = function (event) {
-                player.pause();
                 event.preventDefault();
-                console.log("prueba");
-                //player.currentTime = player.duration * (input.value / 100);
-                player.currentTime = 30;
-                console.log(player.currentTime);
+                base.player.pause();
+                base.player.currentTime = base.player.duration * (input.value / 100);
+                base.player.play();
             };
             buttonItem.appendChild(input);
             return buttonItem;
         };
         base.createButtonItem = function (icon, fnc) {
             var buttonItem = document.createElement('li');
-            var button = base.setButton('btn btn-default playerButton');
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = ('btn btn-default playerButton ' + icon + "Button" );
             button.appendChild(base.setInnerButton(icon));
             button.onclick = function (evt) {
                 fnc(evt);
             };
             buttonItem.appendChild(button);
             return buttonItem;
-        };
-        base.setButton = function (classname) {
-            var button = document.createElement('button');
-            button.type = 'button';
-            button.className = classname;
-            return button;
         };
         base.setInnerButton = function (icon) {
             var span = document.createElement('span');
@@ -118,42 +181,81 @@
          * Is called at base.ini();
          *
          */
+
+        base.addKeyListeners = function () {
+            window.onkeyup = function (e) {
+                var key = e.keyCode ? e.keyCode : e.which;
+                switch (key) {
+                    case $.iLopez.videoPlayer.defaultOptions.keys.play:
+                        base.play(event);
+                        break;
+                    case $.iLopez.videoPlayer.defaultOptions.keys.fullScreen:
+                        base.fullScreen(event);
+                        break;
+                    case $.iLopez.videoPlayer.defaultOptions.keys.volumeUp:
+                        base.increaseVolume(event);
+                        break;
+                    case $.iLopez.videoPlayer.defaultOptions.keys.volumeDown:
+                        base.decreaseVolume(event);
+                        break;
+                    case $.iLopez.videoPlayer.defaultOptions.keys.fastForward:
+                        base.forward(event);
+                        break;
+                    case $.iLopez.videoPlayer.defaultOptions.keys.slowForward:
+                        base.backward(event);
+                        break;
+                }
+            }
+        };
+
         base.initButtons = function () {
             var buttonList = document.createElement('ul');
-            buttonList.className = 'col-md-12 buttonContainer';
+            buttonList.className = 'buttonContainer';
+            if (base.getData.buttons.play) buttonList.appendChild(base.createButtonItem('play', base.play));
+            if (base.getData.buttons.timeStamp) buttonList.appendChild(base.createTimeStamp());
+            if (base.getData.buttons.timeBar) buttonList.appendChild(base.createTimeBar());
+            if (base.getData.buttons.stop) buttonList.appendChild(base.createButtonItem('stop', base.stop));
+            if (base.getData.buttons.volumeUp) buttonList.appendChild(base.createButtonItem('volume-down', base.decreaseVolume));
+            if (base.getData.buttons.volumeDown) buttonList.appendChild(base.createButtonItem('volume-up', base.increaseVolume));
+            if (base.getData.buttons.fastForward) buttonList.appendChild(base.createButtonItem('forward', base.forward));
+            if (base.getData.buttons.slowForward) buttonList.appendChild(base.createButtonItem('backward', base.backward));
+            if (base.getData.buttons.fullScreen) buttonList.appendChild(base.createButtonItem('fullscreen', base.fullScreen));
 
-            buttonList.appendChild(base.createTimeBar());
-            var icons = ['play', 'stop', 'volume-down', 'volume-up', 'backward', 'forward', 'fullscreen'];
-            var functions = [base.play, base.stop, base.decreaseVolume, base.increaseVolume, base.backward, base.forward, base.fullScreen];
-            for (var i = 0; i < icons.length; i++) {
-                buttonList.appendChild(base.createButtonItem(icons[i], functions[i]));
-            }
             base.$el.append(buttonList);
         };
         base.initPlayer = function () {
-            var video = "";
-            video += '<video id="{id}" poster="{poster}">';
+            var video = '<video id="{id}" poster="{poster}" class="iLopezPlayer">';
             video += '<source src="{src}" type="{type}">';
             video += 'Your browser does not support the video element.';
             video += '</video>';
-            video = video.replace("{id}", base.getData.id).replace("{poster}", base.getData.poster);
+
+            //Modifiy the template with values on the constructor
+            video = video.replace("{id}", base.id).replace("{poster}", base.getData.poster);
             video = video.replace("{src}", base.getData.videoURl).replace("{type}", base.getData.type);
 
-            base.$el.html(video);
-            console.log(player);
-            console.log(base.player);
-            player.onended = function () {
-                base.$el.find("#play").attr('class','glyphicon glyphicon-repeat').attr('title' ,'Repeat');
+            //Appends the video to the HTML
+            base.$el.append(video);
+
+            //Asign value to base.player based on ID given on constructor.
+            base.player = base.$el.find('#' + base.id).get(0);
+
+            //Gives the Behavior to the Video Player
+            base.player.onended = function () {
+                base.$el.find("#play").attr('class', 'glyphicon glyphicon-repeat').attr('title', 'Repeat');
             };
-            player.onpause = function () {
-                base.$el.find("#play").attr('class' ,'glyphicon glyphicon-play').attr('title' ,'Play');
+            base.player.onpause = function () {
+                base.$el.find("#play").attr('class', 'glyphicon glyphicon-play').attr('title', 'Play');
             };
-            player.onplaying = function () {
-                base.$el.find("#play").attr('class' ,'glyphicon glyphicon-pause').attr('title' ,'Pause');
+            base.player.onplaying = function () {
+                base.$el.find("#play").attr('class', 'glyphicon glyphicon-pause').attr('title', 'Pause');
             };
-            player.ontimeupdate = function () {
-                base.$el.find("#timeBar").val(player.currentTime * 100 / player.duration);
+            base.player.ontimeupdate = function () {
+                base.$el.find("#timeBar").val(base.player.currentTime * 100 / base.player.duration);
+                base.$el.find(".currentTime")[0].innerHTML = Math.floor(base.player.currentTime);
+                base.$el.find(".totalDuration")[0].innerHTML = Math.floor(base.player.duration);
+                console.log(base.$el.find(".currentTime")[0]);
             };
+
         };
 
         // Run initializer
@@ -163,7 +265,12 @@
     $.iLopez.videoPlayer.defaultOptions = {
         option1: "defData",
         keys: {
-            start: 32
+            play: 32,
+            fullScreen: 45,
+            volumeUp: 38,
+            volumeDown: 40,
+            fastForward: 39,
+            slowForward: 37
         }
     };
 

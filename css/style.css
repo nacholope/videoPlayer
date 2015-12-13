@@ -1,58 +1,12 @@
 body {
     background-color: #AED581;
 }
-#timeBar{
-    margin: 0 auto 10px auto;
-}
-#player{
-    height: auto;
-    width: 100%;
-}
-.playerButton{
-    background-color: inherit;
-    border: 1px solid #222222;
-    color: #222222;
-    font-size: 24px;
-}
-.playerButton:focus{
-    background: none;
-    border-color: inherit;
-    color: white;
-}
-.playerButton:hover{
-    background: none;
-    border-color: inherit;
-    color: white;
-}
-.buttonContainer > li{
-    display: inline;
-}
-#timeBar{
-    padding: 0;
-}
-input[type=range] {
-    -webkit-appearance: none;
-    background-color: white;
-    width: 50%;
-    height:10px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    background-color: red;
-    width: 10px;
-    height: 26px;
-}
 
 .form {
     float: none;
     margin: 0 auto;
     width: 25%;
     color: #02bfe7;
-}
-
-input {
-    /*margin-top: 15px;*/
 }
 
 input:focus {
@@ -71,13 +25,13 @@ input:focus {
     border-color: #f9c642;
 }
 
-#login input{
+#login input {
     margin-top: 10px;
 }
-#login input[type=submit]{
+
+#login input[type=submit] {
     margin-top: 20px;
 }
-
 
 #register {
     width: 75%;
@@ -93,3 +47,4 @@ input:focus {
 #register label {
     color: white;
 }
+

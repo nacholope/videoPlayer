@@ -1,0 +1,59 @@
+.iLopezPlayer{
+    height: auto;
+    width: 100%;
+    margin-top: 20px;
+}
+input[type=range] {
+    -webkit-appearance: none;
+    background-color: white;
+    width: 50%;
+    height:10px;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background-color: red;
+    width: 10px;
+    height: 26px;
+}
+.playerButton{
+    background-color: inherit;
+    border: none;
+    color: white;
+    font-size: 24px;
+}
+.playerButton:hover{
+    background: none;
+    border-color: inherit;
+    color: white;
+}
+#timeBar{
+    width: 100%;
+    height: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 12px;
+    padding: 0;
+}
+.buttonContainer {
+    background: #222222;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    border-radius: 2px;
+    height: 46px;
+    padding: 0;
+    bottom: 5px;
+    opacity: 1;
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+}
+.sceneMaker{
+    margin-right: 10px;
+}
+#sceneRow{
+    list-style: none;
+    margin-top: 20px;
+}
+span{
+    color: white;
+}
