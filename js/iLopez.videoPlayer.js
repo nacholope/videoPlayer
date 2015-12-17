@@ -16,77 +16,92 @@
         // Add a reverse reference to the DOM object
         base.$el.data("iLopez.videoPlayer", base);
         base.init = function () {
-            base.$el[0].className = 'col-md-10';
+            //Change the class of the div containing the video
+            base.$el[0].className = 'iLopezPlayer';
+
             base.getData = getData;
-            base.options = $.extend($.iLopez.videoPlayer.defaultOptions, options);
-            base.id = base.getData.id + Math.floor((Math.random() * 100) + 1);
+            //The default function
+            // $.extend({},$.iLopez.videoPlayer.defaultOptions,options);
+            //Rewrite the default options of the object so future instances of the plugin will have the options passed before.
+            //I changed it creating a temporally object as third parameter merging the default options and options
+            base.tempOptions = $.iLopez.videoPlayer.defaultOptions;
+            base.options = $.extend({}, $.iLopez.videoPlayer.defaultOptions, $.extend(true, base.tempOptions, options));
+            base.id = base.options.id;
             // Put your initialization code here
             base.initPlayer();
             base.initButtons();
+            base.behaviorPlayer();
             base.addKeyListeners();
-            base.renderScenesForm();
-            base.renderScenes();
+            base.initModal();
+            base.addSaveScenesListener();
+
         };
         /**
          * Styles the box of buttons.
          */
-        base.renderScenesForm = function () {
-            function updateSceneRow(name) {
-                var scenes = $("#sceneRow")[0];
-                var li = document.createElement('li');
-                var sceneButton = document.createElement('button');
-                sceneButton.className = 'btn btn-default scene';
-                sceneButton.innerHTML = name;
-                sceneButton.onclick = function () {
-                    base.player.currentTime = localStorage.getItem(name);
-                };
-                li.appendChild(sceneButton);
-                scenes.appendChild(li);
-            }
-            var row = document.createElement('ul');
-            row.id = 'sceneRow';
-            row.className = 'col-md-2';
-            $('.container').last().append(row);
-
-            var buttonCreateScenes = document.createElement('button');
-            buttonCreateScenes.type = 'button';
-            buttonCreateScenes.className = 'btn btn-default sceneMaker';
-            buttonCreateScenes.innerHTML = 'Save scene';
-            buttonCreateScenes.onclick = function () {
-                var sceneName = $('#inputScene').get(0).value;
-                var time = base.player.currentTime;
-                if (localStorage.getItem(sceneName) === null) {
+        base.addSaveScenesListener = function(){
+            $('#ButtonScenes').click(
+                function () {
+                    base.player.pause();
+                    var sceneName = $('#SceneTextInputID').get(0).value + " " + $('#SceneTextInput').get(0).value;
+                    var time = base.player.currentTime;
                     localStorage.setItem(sceneName, time);
-                    updateSceneRow(sceneName);
-                } else {
-                    if (confirm("This scene exist, do you want update the time?")) {
-                        localStorage.setItem(sceneName, time);
-                    }
+                    base.showScenes();
                 }
-
-            };
-            var input = document.createElement('input');
-            input.type = 'text';
-            input.id = "inputScene";
-            input.placeholder = 'Scene name';
-            $("#sceneRow").append(buttonCreateScenes);
-            $("#sceneRow").append(input);
-
+            );
         };
         base.renderScenes = function () {
+            var ul = document.createElement('ul');
             $.each(localStorage, function (index, value) {
-                var li = document.createElement('li');
-                var button = document.createElement('button');
-                button.className = 'btn btn-default scene';
-                button.innerHTML = index;
-                button.onclick = function () {
-                    base.player.currentTime = value;
-                };
-                li.appendChild(button);
-                $("#sceneRow").append(li);
+                var id = index.split(" ")[0];
+                if (id === base.id) {
+                    var li = document.createElement('li');
+                    var button = document.createElement('button');
+                    button.className = 'scene';
+                    button.style.style = 'none';
+                    button.innerHTML = index.replace(index.split(" ")[0], "");
+                    button.onclick = function () {
+                        base.player.currentTime = value;
+                    };
+                    li.appendChild(button);
+                    ul.appendChild(li);
+                }
             });
-
+            return ul;
         };
+        base.initModal = function () {
+            //Check only 1 modal is active to avoid creating 1 modal per video.
+            if ($('#iLopezPlayerModal').get(0) == undefined) {
+                var modal = '<div class="modal fade" id="iLopezPlayerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+                modal += '<div class="modal-dialog">';
+                modal += '<div class="modal-content">';
+                modal += '<div class="modal-header">';
+                modal += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+                modal += '<h4 class="modal-title" id="myModalLabel">Scenes of the video</h4>';
+                modal += '</div>';
+                modal += '<div class="modal-body">';
+                modal += '<input type="text" id="SceneTextInput">';
+                modal += '<input type="hidden" id="SceneTextInputID" value="">';
+                modal += '<button value="save Scene" id="ButtonScenes">Save Scene</button>';
+                modal += '<div class="modal-body-content">';
+                modal += 'Cotenido Modal';
+                modal += '</div>';
+                modal += '</div>';
+                modal += '<div class="modal-footer">';
+                modal += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+                modal += '</div>';
+                modal += '</div>';
+                modal += '</div>';
+                modal += '</div>';
+                $(document.body).append(modal);
+            }
+        };
+        base.showScenes = function () {
+            var Modal = $('#iLopezPlayerModal').find('.modal-body-content').get(0);
+            Modal.innerHTML = "";
+            Modal.appendChild(base.renderScenes());
+        };
+
         // Functions of the VideoPlayer Buttons
         base.play = function (evt) {
             evt.preventDefault();
@@ -118,27 +133,31 @@
             }
             base.player.controls = true;
         };
-        base.increaseVolume = function (evt) {
+        base.updateVolume = function (evt, value) {
             evt.preventDefault();
-            base.player.volume = Math.min(1, base.player.volume + 0.1);
+            base.player.volume = value / 100;
         };
-        base.decreaseVolume = function (evt) {
-            evt.preventDefault();
-            base.player.volume = Math.max(0, base.player.volume - 0.1);
+        base.updateTimeSpan = function (value) {
+            value = Math.floor(value);
+            if (value < 10) {
+                value = '0' + value;
+            }
+            return value;
         };
         /**
          * Functions that create VideoPlayer Buttons
          * @returns {Element}
          */
-        base.createTimeStamp = function(){
-            var buttonItem = document.createElement('li');
-            buttonItem.innerHTML = '<span class="currentTime">00</span>';
-            buttonItem.innerHTML += '<span>:</span>';
-            buttonItem.innerHTML += '<span class="totalDuration">00</span>';
-            return buttonItem;
-        };
         base.createTimeBar = function () {
-            var buttonItem = document.createElement('li');
+            function createSpan(className, value) {
+                var span = document.createElement('span');
+                span.className = className;
+                span.innerHTML = value;
+                return span;
+            }
+
+            var li = document.createElement('li');
+            li.id = 'timeBarContainer';
             var input = document.createElement('input');
             input.type = 'range';
             input.id = 'timeBar';
@@ -154,8 +173,63 @@
                 base.player.currentTime = base.player.duration * (input.value / 100);
                 base.player.play();
             };
-            buttonItem.appendChild(input);
-            return buttonItem;
+            //Checks if the user wants TimeSpam
+            if (base.options.buttons.timeStamp) {
+                li.appendChild(createSpan("currentTime", "00"));
+                li.appendChild(createSpan("", "/"));
+                li.appendChild(createSpan("totalDuration"));
+            }
+
+            li.appendChild(input);
+            return li;
+        };
+        base.createSoundButton = function () {
+            var li = document.createElement('li');
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.id = 'soundButton';
+            button.className = ('btn btn-default playerButton Sound Button' );
+
+            var span = document.createElement('span');
+            span.className = 'glyphicon glyphicon-volume-up';
+            span.id = 'sound';
+            span.title = 'sound';
+            button.appendChild(span);
+
+            var input = document.createElement('input');
+            input.type = 'range';
+            input.id = 'soundBar';
+            input.min = '0';
+            input.value = '50';
+            input.max = '100';
+            input.style.display = 'none';
+            input.onchange = function (event) {
+                base.updateVolume(event, input.value);
+
+            };
+
+            button.onmouseover = function () {
+                input.style.display = 'block';
+            };
+            button.onmouseout = function () {
+                input.style.display = 'none';
+            };
+
+            button.appendChild(input);
+            li.appendChild(button);
+            return li;
+        };
+        base.createScenesButton = function () {
+            var li = document.createElement('li');
+            var button2 = '<button class="btn btn-default playerButton Scenes Button" id="' + base.id + '" data-toggle="modal" data-target="#iLopezPlayerModal">';
+            button2 += '<span class="glyphicon glyphicon-list-alt"></span>';
+            button2 += '</button>';
+            li.innerHTML = button2;
+            li.onmouseover = function () {
+                $('#SceneTextInputID').get(0).value = base.id;
+                base.showScenes();
+            };
+            return li;
         };
         base.createButtonItem = function (icon, fnc) {
             var buttonItem = document.createElement('li');
@@ -186,74 +260,97 @@
             window.onkeyup = function (e) {
                 var key = e.keyCode ? e.keyCode : e.which;
                 switch (key) {
-                    case $.iLopez.videoPlayer.defaultOptions.keys.play:
+                    case base.options.keys.play:
                         base.play(event);
                         break;
-                    case $.iLopez.videoPlayer.defaultOptions.keys.fullScreen:
+                    case base.options.keys.fullScreen:
                         base.fullScreen(event);
                         break;
-                    case $.iLopez.videoPlayer.defaultOptions.keys.volumeUp:
-                        base.increaseVolume(event);
+                    case base.options.keys.volumeUp:
+                        event.preventDefault();
+                        base.player.volume = Math.min(1, base.player.volume + 0.1);
                         break;
-                    case $.iLopez.videoPlayer.defaultOptions.keys.volumeDown:
-                        base.decreaseVolume(event);
+                    case base.options.keys.volumeDown:
+                        event.preventDefault();
+                        base.player.volume = Math.max(0, base.player.volume - 0.1);
                         break;
-                    case $.iLopez.videoPlayer.defaultOptions.keys.fastForward:
+                    case base.options.keys.fastForward:
                         base.forward(event);
                         break;
-                    case $.iLopez.videoPlayer.defaultOptions.keys.slowForward:
+                    case base.options.keys.slowForward:
                         base.backward(event);
                         break;
                 }
             }
         };
-
         base.initButtons = function () {
             var buttonList = document.createElement('ul');
             buttonList.className = 'buttonContainer';
-            if (base.getData.buttons.play) buttonList.appendChild(base.createButtonItem('play', base.play));
-            if (base.getData.buttons.timeStamp) buttonList.appendChild(base.createTimeStamp());
-            if (base.getData.buttons.timeBar) buttonList.appendChild(base.createTimeBar());
-            if (base.getData.buttons.stop) buttonList.appendChild(base.createButtonItem('stop', base.stop));
-            if (base.getData.buttons.volumeUp) buttonList.appendChild(base.createButtonItem('volume-down', base.decreaseVolume));
-            if (base.getData.buttons.volumeDown) buttonList.appendChild(base.createButtonItem('volume-up', base.increaseVolume));
-            if (base.getData.buttons.fastForward) buttonList.appendChild(base.createButtonItem('forward', base.forward));
-            if (base.getData.buttons.slowForward) buttonList.appendChild(base.createButtonItem('backward', base.backward));
-            if (base.getData.buttons.fullScreen) buttonList.appendChild(base.createButtonItem('fullscreen', base.fullScreen));
+
+            if (base.options.buttons.play) buttonList.appendChild(base.createButtonItem('play', base.play));
+            if (base.options.buttons.stop) buttonList.appendChild(base.createButtonItem('stop', base.stop));
+            if (base.options.buttons.timeBar) buttonList.appendChild(base.createTimeBar());
+            if (base.options.buttons.volume) buttonList.appendChild(base.createSoundButton());
+            if (base.options.buttons.scenes) buttonList.appendChild(base.createScenesButton());
+            if (base.options.buttons.slowForward) buttonList.appendChild(base.createButtonItem('backward', base.backward));
+            if (base.options.buttons.fastForward) buttonList.appendChild(base.createButtonItem('forward', base.forward));
+            if (base.options.buttons.fullScreen) buttonList.appendChild(base.createButtonItem('fullscreen', base.fullScreen));
 
             base.$el.append(buttonList);
         };
         base.initPlayer = function () {
-            var video = '<video id="{id}" poster="{poster}" class="iLopezPlayer">';
+            var video = '<video id="{id}" poster="{poster}" class="iLopezPlayerVideo">';
             video += '<source src="{src}" type="{type}">';
             video += 'Your browser does not support the video element.';
             video += '</video>';
 
             //Modifiy the template with values on the constructor
-            video = video.replace("{id}", base.id).replace("{poster}", base.getData.poster);
-            video = video.replace("{src}", base.getData.videoURl).replace("{type}", base.getData.type);
+            video = video.replace("{id}", base.id).replace("{poster}", base.options.poster);
+            video = video.replace("{src}", base.options.videoURl).replace("{type}", base.options.type);
 
             //Appends the video to the HTML
             base.$el.append(video);
 
-            //Asign value to base.player based on ID given on constructor.
+        };
+
+
+        base.behaviorPlayer = function () {
+
+            //Search and initialize values.
+            //Button of Play
+            base.buttonPlay = base.$el.find("#play").get(0);
+            //Timebar of the video
+            base.timeBar = base.$el.find("#timeBar").get(0);
+            //Span to show the current time.
+            base.currentTimeSpan = base.$el.find(".currentTime").get(0);
+            //span to show the total duration of the video.
+            base.durationTimeSpan = base.$el.find(".totalDuration")[0];
+            //Video
             base.player = base.$el.find('#' + base.id).get(0);
 
-            //Gives the Behavior to the Video Player
+            //Waits till the video is loaded.
+            base.player.oncanplay = function () {
+                //Set the total duration of the video to the Span
+                base.durationTimeSpan.innerHTML = Math.floor(base.player.duration);
+            };
             base.player.onended = function () {
-                base.$el.find("#play").attr('class', 'glyphicon glyphicon-repeat').attr('title', 'Repeat');
+                base.buttonPlay.className = 'glyphicon glyphicon-repeat';
+                base.buttonPlay.title = 'Repeat';
             };
             base.player.onpause = function () {
-                base.$el.find("#play").attr('class', 'glyphicon glyphicon-play').attr('title', 'Play');
+                base.buttonPlay.className = 'glyphicon glyphicon-play';
+                base.buttonPlay.title = 'Play';
             };
             base.player.onplaying = function () {
-                base.$el.find("#play").attr('class', 'glyphicon glyphicon-pause').attr('title', 'Pause');
+                base.buttonPlay.className = 'glyphicon glyphicon-pause';
+                base.buttonPlay.title = 'Pause';
             };
             base.player.ontimeupdate = function () {
-                base.$el.find("#timeBar").val(base.player.currentTime * 100 / base.player.duration);
-                base.$el.find(".currentTime")[0].innerHTML = Math.floor(base.player.currentTime);
-                base.$el.find(".totalDuration")[0].innerHTML = Math.floor(base.player.duration);
-                console.log(base.$el.find(".currentTime")[0]);
+                base.timeBar.value = base.player.currentTime * 100 / base.player.duration;
+                base.currentTimeSpan.innerHTML = base.updateTimeSpan(base.player.currentTime);
+            };
+            base.player.onclick = function (event) {
+                base.play(event);
             };
 
         };
@@ -263,7 +360,8 @@
     };
 
     $.iLopez.videoPlayer.defaultOptions = {
-        option1: "defData",
+        poster: "img/poster.png",
+        type: 'video/mp4',
         keys: {
             play: 32,
             fullScreen: 45,
@@ -271,7 +369,19 @@
             volumeDown: 40,
             fastForward: 39,
             slowForward: 37
+        },
+        buttons: {
+            timeBar: true,
+            timeStamp: true,
+            play: true,
+            stop: true,
+            volume: true,
+            fastForward: true,
+            slowForward: true,
+            scenes: true,
+            fullScreen: true
         }
+
     };
 
     $.fn.iLopez_videoPlayer = function (getData, options) {

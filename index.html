@@ -30,39 +30,99 @@
     </div>
 </nav>
 <div class="container">
-    <div id="videoPlayer">
-        <!--<video id="player" poster="img/poster.png">
-            <source src="video/video.mp4" type="video/mp4">
-            Your browser does not support the video element.
-        </video>
-        <!--<span class="videoPlayer"></span> -->
+    <div class="row">
+        <div class="col-md-12">
+            <div id="videoPlayer"></div>
+        </div>
+        <div class="col-md-12">
+            <div id="videoPlayer2"></div>
+        </div>
+        <div class="col-md-4">
+            <div id="videoPlayer3"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div id="videoPlayer4"></div>
+        </div>
+        <div class="col-md-6">
+            <div id="videoPlayer5"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="videoPlayer6"></div>
+        </div>
     </div>
 </div>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 <script type="text/javascript" src="js/iLopez.videoPlayer.js"></script>
 <script type="text/javascript">
-    new jQuery.iLopez.videoPlayer("#videoPlayer", {
-        id : 'pepitoPlayer',
-        poster: 'img/poster.png',
-        buttons :{
-            timeBar : true,
-            timeStamp : true,
-            play : true,
-            stop : true,
-            volumeUp : true,
-            volumeDown : true,
-            fastForward : false,
-            slowForward : false,
-            fullScreen: true
-        },
-        keys:{
-            play: 69
-        },
-        videoURl: 'video/video.mp4',
-        type: 'video/mp4'
-    }, {});
+    $(document).ready(function () {
+        new jQuery.iLopez.videoPlayer("#videoPlayer",{}, {
+            id: 'pepitoPlayer',
+            poster: 'img/poster.png',
+            buttons: {
+                fastForward: false,
+                slowForward: false
+            },
+            videoURl: 'video/movie.webm',
+            type: 'video/mp4'
+        });
+        new jQuery.iLopez.videoPlayer("#videoPlayer2", {},{
+            id: 'pepitoPlayer2',
+            poster: 'img/video-poster.jpg',
+            buttons: {
+                fastForward: true,
+                slowForward: true,
+            },
+            videoURl: 'video/movie.webm',
+            type: 'video/mp4'
+        });/*
+        new jQuery.iLopez.videoPlayer("#videoPlayer3",{},{
+            id: 'pepitoPlayer',
+            poster: 'img/red-play.png',
+            buttons: {
+                fastForward: false,
+                slowForward: false
+            },
+            videoURl: 'video/video.mp4',
+            type: 'video/mp4'
+        });
+        new jQuery.iLopez.videoPlayer("#videoPlayer4",{} ,{
+            id: 'pepitoPlayer',
+            poster: 'img/video-poster.jpg',
+            buttons: {
+                fastForward: false,
+                slowForward: false
+            },
+            videoURl: 'video/video.mp4',
+            type: 'video/mp4'
+        });
+        new jQuery.iLopez.videoPlayer("#videoPlayer5",{}, {
+            id: 'pepitoPlayer',
+            poster: 'img/video-poster.jpg',
+            buttons: {
+                fastForward: false,
+                slowForward: false
+            },
+            videoURl: 'video/video.mp4',
+            type: 'video/mp4'
+        });
+        new jQuery.iLopez.videoPlayer("#videoPlayer6",{},{
+            id: 'pepitoPlayer',
+            poster: 'img/video-poster.jpg',
+            buttons: {
+                fastForward: false,
+                slowForward: false
+            },
+            videoURl: 'video/video.mp4',
+            type: 'video/mp4'
+        });*/
+    });
 </script>
 </body>
